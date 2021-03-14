@@ -1,64 +1,66 @@
 SetTitleMatchMode, REGEX
 
-Config(ScriptName){
-    if (ScriptName = "F6 Microsoft SQL Server Management Studio") { 
-		return 1
-	}
-	if (ScriptName = "CTRL+S Microsoft SQL Server Management Studio") {
-		return 1
-	}
-	if (ScriptName = "DOUBLE LBUTTON Microsoft Visual Studio") {
-		return 1
-	}
-}
+global F6_Microsoft_SQL_Server_Management_Studio = 1
+global CTRL_S_Microsoft_SQL_Server_Management_Studio = 1
+global DOUBLE_LBUTTON_Microsoft_Visual_Studio = 1
 
 
 ;##################################################################################################### 
-	#If Config("F6 Microsoft SQL Server Management Studio") and WinActive("Microsoft SQL Server Management Studio$")
+#IfWinActive, Microsoft SQL Server Management Studio$
+	;------------------------------------------------------------------------------------------------
 	F6::
-		ClipboardOld := CopyAllToClipboardAndReturnOld() 	
-		if CountInString( Clipboard , "PROCEDURE" ) > 1 {
-			MsgBox, Too many PROCEDURE, cant replace.
-			return
-		}
-		Clipboard := StrReplace(Clipboard, "CREATE PROCEDURE", "CREATE OR ALTER PROCEDURE",0,1)
-		Send ^v
-		Send ^{Home}
-		Clipboard := ClipboardOld 
-	return
-	;------------------------------------------------------------------------------------------------
-	#If Config("CTRL+S Microsoft SQL Server Management Studio") and WinActive("Microsoft SQL Server Management Studio$")
-	^s::
-		ClipboardOld := CopyAllToClipboardAndReturnOld() 
-		if CountInString( Clipboard , "PROCEDURE" ) > 1 {
-			MsgBox, Too many PROCEDURE. Saved without replace anyway.
-			Send ^{Home}
-			Send ^s
-			return
-		}
-		Clipboard := StrReplace(Clipboard, "CREATE OR ALTER PROCEDURE", "CREATE PROCEDURE",0,1)
-		Send ^v
-		Send ^{Home}
-		Send ^s
-		Clipboard := ClipboardOld
-	return
-	;------------------------------------------------------------------------------------------------
-	#If Config("DOUBLE LBUTTON Microsoft Visual Studio") and ClickedOnWindow("Microsoft Visual Studio$")  
-	~LButton::
-		If (A_ThisHotkey = A_PriorHotkey and A_TimeSincePriorHotkey < 500 ) {
-			WinWaitActive, Microsoft SQL Server Management Studio$ ,, 5
-			if ErrorLevel {
-				return
-			}
+		if (F6_Microsoft_SQL_Server_Management_Studio){
 			ClipboardOld := CopyAllToClipboardAndReturnOld() 	
 			if CountInString( Clipboard , "PROCEDURE" ) > 1 {
 				MsgBox, Too many PROCEDURE, cant replace.
 				return
 			}
-			Clipboard := StrReplace(Clipboard, "CREATE PROCEDURE", "CREATE OR ALTER PROCEDURE",0,3)
+			Clipboard := StrReplace(Clipboard, "CREATE PROCEDURE", "CREATE OR ALTER PROCEDURE",0,1)
 			Send ^v
 			Send ^{Home}
 			Clipboard := ClipboardOld 
+		}
+	return
+	;------------------------------------------------------------------------------------------------
+	^s::
+		if (CTRL_S_Microsoft_SQL_Server_Management_Studio){		
+			ClipboardOld := CopyAllToClipboardAndReturnOld() 
+			if CountInString( Clipboard , "PROCEDURE" ) > 1 {
+				MsgBox, Too many PROCEDURE. Saved without replace anyway.
+				Send ^{Home}
+				Send ^s
+				return
+			}
+			Clipboard := StrReplace(Clipboard, "CREATE OR ALTER PROCEDURE", "CREATE PROCEDURE",0,1)
+			Send ^v
+			Send ^{Home}
+			Send ^s
+			Clipboard := ClipboardOld
+		}
+	return
+	;------------------------------------------------------------------------------------------------
+#IfWinActive
+;##################################################################################################### 
+
+;##################################################################################################### 
+#If ClickedOnWindow("Microsoft Visual Studio$")  
+	~LButton::
+		if (DOUBLE_LBUTTON_Microsoft_Visual_Studio){
+			if (A_ThisHotkey = A_PriorHotkey and A_TimeSincePriorHotkey < 500 ) {
+				WinWaitActive, Microsoft SQL Server Management Studio$ ,, 2
+				if ErrorLevel {
+					return
+				}
+				ClipboardOld := CopyAllToClipboardAndReturnOld() 	
+				if CountInString( Clipboard , "PROCEDURE" ) > 1 {
+					MsgBox, Too many PROCEDURE, cant replace.
+					return
+				}
+				Clipboard := StrReplace(Clipboard, "CREATE PROCEDURE", "CREATE OR ALTER PROCEDURE",0,3)
+				Send ^v
+				Send ^{Home}
+				Clipboard := ClipboardOld 
+			}
 		}
 	Return
 ;#####################################################################################################
